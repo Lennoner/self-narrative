@@ -1,12 +1,162 @@
 import Link from 'next/link';
-import { LEE_ONYU_REPORT_DATA } from '@/data/dummyData';
+import { getReportData } from '@/lib/reportService';
+import { getAllUserNames } from '@/lib/googleSheets';
 import UserProfileCard from '@/components/UserProfileCard';
 import GapChart from '@/components/GapChart';
 import FeedbackCarousel from '@/components/FeedbackCarousel';
 
-export default function ReportPage() {
-    // 현재는 더미 데이터 사용 (나중에 동적 라우팅으로 변경)
-    const reportData = LEE_ONYU_REPORT_DATA;
+interface ReportPageProps {
+    searchParams: Promise<{ name?: string }>;
+}
+
+export default async function ReportPage({ searchParams }: ReportPageProps) {
+    const params = await searchParams;
+    const userName = params.name;
+
+    // 사용자 이름이 없으면 검색 화면 표시
+    if (!userName) {
+        const userNames = await getAllUserNames();
+
+        return (
+            <main className="min-h-screen bg-white text-black">
+                {/* 헤더 */}
+                <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+                    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Link href="/" className="text-xl font-medium tracking-tight">
+                            Self Narrative
+                        </Link>
+                        <nav className="flex items-center gap-8">
+                            <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
+                                홈
+                            </Link>
+                            <a
+                                href="https://tally.so/r/ODl9AK"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-gray-600 hover:text-black transition-colors"
+                            >
+                                설문하기
+                            </a>
+                        </nav>
+                    </div>
+                </header>
+
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+                    <div className="max-w-md w-full text-center">
+                        <p className="text-sm text-gray-500 mb-4 tracking-widest uppercase">
+                            Report
+                        </p>
+                        <h1 className="text-3xl font-light mb-8">
+                            <span className="font-medium">결과</span> 조회
+                        </h1>
+                        <p className="text-gray-600 mb-8">
+                            설문에 참여하신 분의 이름을 선택해주세요
+                        </p>
+
+                        {/* 사용자 목록 */}
+                        <div className="space-y-3">
+                            {userNames.length > 0 ? (
+                                userNames.map((name) => (
+                                    <Link
+                                        key={name}
+                                        href={`/report?name=${encodeURIComponent(name)}`}
+                                        className="block w-full py-4 px-6 bg-gray-50 rounded-xl text-left hover:bg-gray-100 transition-colors"
+                                    >
+                                        <span className="font-medium">{name}</span>
+                                        <span className="text-gray-400 text-sm ml-2">→</span>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">아직 설문 데이터가 없습니다.</p>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
+    // 리포트 데이터 가져오기
+    const reportData = await getReportData(userName);
+
+    // 데이터가 없으면 에러 화면
+    if (!reportData) {
+        return (
+            <main className="min-h-screen bg-white text-black">
+                <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+                    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Link href="/" className="text-xl font-medium tracking-tight">
+                            Self Narrative
+                        </Link>
+                        <nav className="flex items-center gap-8">
+                            <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
+                                홈
+                            </Link>
+                            <Link href="/report" className="text-sm text-gray-600 hover:text-black transition-colors">
+                                다른 결과 보기
+                            </Link>
+                        </nav>
+                    </div>
+                </header>
+
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+                    <div className="text-center">
+                        <h1 className="text-3xl font-light mb-4">
+                            <span className="font-medium">{userName}</span>님의 결과를 찾을 수 없습니다
+                        </h1>
+                        <p className="text-gray-600 mb-8">
+                            설문에 참여하셨는지 확인해주세요
+                        </p>
+                        <Link
+                            href="/report"
+                            className="inline-block px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                            다른 결과 조회하기
+                        </Link>
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
+    // 지인 응답이 부족한 경우
+    if (reportData.friendData.totalResponses < 1) {
+        return (
+            <main className="min-h-screen bg-white text-black">
+                <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+                    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Link href="/" className="text-xl font-medium tracking-tight">
+                            Self Narrative
+                        </Link>
+                        <nav className="flex items-center gap-8">
+                            <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
+                                홈
+                            </Link>
+                        </nav>
+                    </div>
+                </header>
+
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+                    <div className="max-w-md text-center">
+                        <h1 className="text-3xl font-light mb-4">
+                            <span className="font-medium">{userName}</span>님,
+                            <br />아직 지인 응답이 없어요
+                        </h1>
+                        <p className="text-gray-600 mb-8">
+                            친구들에게 설문 링크를 공유하고
+                            <br />응답을 기다려주세요
+                        </p>
+                        <Link
+                            href={`/share?name=${encodeURIComponent(userName)}`}
+                            className="inline-block px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                            지인에게 공유하기
+                        </Link>
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-white text-black">
@@ -17,20 +167,12 @@ export default function ReportPage() {
                         Self Narrative
                     </Link>
                     <nav className="flex items-center gap-8">
-                        <Link
-                            href="/"
-                            className="text-sm text-gray-600 hover:text-black transition-colors"
-                        >
+                        <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
                             홈
                         </Link>
-                        <a
-                            href="https://tally.so/r/ODl9AK"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-gray-600 hover:text-black transition-colors"
-                        >
-                            설문하기
-                        </a>
+                        <Link href="/report" className="text-sm text-gray-600 hover:text-black transition-colors">
+                            다른 결과 보기
+                        </Link>
                     </nav>
                 </div>
             </header>
