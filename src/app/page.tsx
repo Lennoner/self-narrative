@@ -41,7 +41,7 @@ export default function Home() {
               설문하기
             </a>
             <Link
-              href="/report?name=이온유&verified=true&demo=true"
+              href="/demo"
               className="text-sm text-gray-600 hover:text-black transition-colors"
             >
               데모 보기
@@ -75,7 +75,7 @@ export default function Home() {
               나의 서사 찾기 →
             </a>
             <Link
-              href="/report?name=이온유&verified=true&demo=true"
+              href="/demo"
               className="px-8 py-4 bg-white text-black text-sm font-medium rounded-full border border-gray-200 hover:border-gray-400 transition-colors"
             >
               결과 미리보기
