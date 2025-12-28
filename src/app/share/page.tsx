@@ -118,8 +118,8 @@ function ShareContent() {
                             <button
                                 onClick={copyToClipboard}
                                 className={`w-full py-4 rounded-full text-sm font-medium transition-all ${copied
-                                        ? 'bg-black text-white'
-                                        : 'bg-black text-white hover:bg-gray-800'
+                                    ? 'bg-black text-white'
+                                    : 'bg-black text-white hover:bg-gray-800'
                                     }`}
                             >
                                 {copied ? '✓ 복사 완료' : '링크 복사하기'}
@@ -160,10 +160,10 @@ function ShareContent() {
                             ← 홈으로
                         </Link>
                         <Link
-                            href="/report"
+                            href={`/report?name=${encodeURIComponent(userName)}`}
                             className="text-gray-500 hover:text-black transition-colors"
                         >
-                            결과 미리보기 →
+                            내 결과 보기 →
                         </Link>
                     </div>
                 </div>
