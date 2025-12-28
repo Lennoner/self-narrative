@@ -1,14 +1,43 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 
 function ShareContent() {
     const searchParams = useSearchParams();
-    const userName = searchParams.get('name') || '참여자';
+    const userName = searchParams.get('name') || '';
 
     const [copied, setCopied] = useState(false);
+    const [isValidUser, setIsValidUser] = useState<boolean | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // 설문 참여자인지 확인
+    useEffect(() => {
+        if (!userName) {
+            setIsValidUser(false);
+            setIsLoading(false);
+            return;
+        }
+
+        const checkUser = async () => {
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: userName, step: 'check-name' }),
+                });
+                const data = await res.json();
+                setIsValidUser(data.found === true);
+            } catch {
+                setIsValidUser(false);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkUser();
+    }, [userName]);
 
     // 지인용 설문 링크 (사용자 이름 포함)
     const friendSurveyLink = `https://tally.so/r/44BRVA?name=${encodeURIComponent(userName)}`;
@@ -54,6 +83,64 @@ function ShareContent() {
             copyWithMessage();
         }
     };
+
+    // 로딩 중
+    if (isLoading) {
+        return (
+            <main className="min-h-screen bg-white text-black flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-2xl font-light mb-4">확인 중...</div>
+                    <p className="text-gray-500">잠시만 기다려주세요</p>
+                </div>
+            </main>
+        );
+    }
+
+    // 설문 참여자가 아닌 경우
+    if (!isValidUser) {
+        return (
+            <main className="min-h-screen bg-white text-black">
+                <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+                    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Link href="/" className="text-xl font-medium tracking-tight">
+                            Self Narrative
+                        </Link>
+                        <nav className="flex items-center gap-8">
+                            <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
+                                홈
+                            </Link>
+                        </nav>
+                    </div>
+                </header>
+
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+                    <div className="max-w-md text-center">
+                        <h1 className="text-3xl font-light mb-4">
+                            {userName ? (
+                                <>
+                                    <span className="font-medium">{userName}</span>님은
+                                    <br />아직 설문에 참여하지 않았어요
+                                </>
+                            ) : (
+                                '이름이 필요해요'
+                            )}
+                        </h1>
+                        <p className="text-gray-600 mb-8">
+                            먼저 설문에 참여해야 친구들에게 공유할 수 있어요
+                        </p>
+                        <a
+                            href="https://tally.so/r/ODl9AK"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                        >
+                            설문 시작하기 →
+                        </a>
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-white text-black">

@@ -25,12 +25,45 @@ function ReportContent() {
     const [errorMessage, setErrorMessage] = useState('');
     const [reportData, setReportData] = useState<ReportData | null>(null);
 
-    // URL에서 이름과 verified 파라미터가 있으면 바로 데이터 로드
+    // URL에서 이름과 verified 파라미터 처리
     useEffect(() => {
         if (urlName && urlVerified) {
+            // 인증 완료 상태 - 바로 데이터 로드
             loadReportData(urlName);
+        } else if (urlName && !urlVerified) {
+            // 이름은 있지만 인증 안됨 - Step 2(이메일)로 바로 이동
+            setName(urlName);
+            checkNameAndGoToEmail(urlName);
         }
     }, [urlName, urlVerified]);
+
+    // 이름 확인 후 이메일 단계로 이동
+    const checkNameAndGoToEmail = async (nameToCheck: string) => {
+        setStep('loading');
+        setErrorMessage('');
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nameToCheck, step: 'check-name' }),
+            });
+
+            const data = await res.json();
+
+            if (!data.found) {
+                setErrorMessage(data.message || '해당 이름으로 등록된 사용자를 찾을 수 없습니다.');
+                setStep('name');
+                return;
+            }
+
+            setEmailHints(data.emailHints || []);
+            setStep('email');
+        } catch {
+            setErrorMessage('확인 중 오류가 발생했습니다.');
+            setStep('name');
+        }
+    };
 
     const loadReportData = async (userName: string) => {
         setStep('loading');
