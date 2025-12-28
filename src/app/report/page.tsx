@@ -9,49 +9,136 @@ import GapChart from '@/components/GapChart';
 import FeedbackCarousel from '@/components/FeedbackCarousel';
 import { ReportData } from '@/types';
 
+type AuthStep = 'name' | 'email' | 'loading' | 'verified' | 'error';
+
 function ReportContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const userName = searchParams.get('name');
 
-    const [searchName, setSearchName] = useState('');
+    const urlName = searchParams.get('name');
+    const urlVerified = searchParams.get('verified') === 'true';
+
+    const [step, setStep] = useState<AuthStep>('name');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [emailHints, setEmailHints] = useState<string[]>([]);
+    const [errorMessage, setErrorMessage] = useState('');
     const [reportData, setReportData] = useState<ReportData | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
+    // URL에서 이름과 verified 파라미터가 있으면 바로 데이터 로드
     useEffect(() => {
-        if (userName) {
-            setLoading(true);
-            setError(null);
-
-            fetch(`/api/report?name=${encodeURIComponent(userName)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        setError(data.error);
-                        setReportData(null);
-                    } else {
-                        setReportData(data);
-                    }
-                })
-                .catch(() => {
-                    setError('데이터를 불러오는데 실패했습니다.');
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+        if (urlName && urlVerified) {
+            loadReportData(urlName);
         }
-    }, [userName]);
+    }, [urlName, urlVerified]);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchName.trim()) {
-            router.push(`/report?name=${encodeURIComponent(searchName.trim())}`);
+    const loadReportData = async (userName: string) => {
+        setStep('loading');
+        try {
+            const res = await fetch(`/api/report?name=${encodeURIComponent(userName)}`);
+            const data = await res.json();
+
+            if (data.error) {
+                setErrorMessage(data.error);
+                setStep('error');
+            } else {
+                setReportData(data);
+                setStep('verified');
+            }
+        } catch {
+            setErrorMessage('데이터를 불러오는데 실패했습니다.');
+            setStep('error');
         }
     };
 
-    // 이름이 없으면 검색 화면 표시
-    if (!userName) {
+    // Step 1: 이름 확인
+    const handleNameSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+
+        setStep('loading');
+        setErrorMessage('');
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name.trim(), step: 'check-name' }),
+            });
+
+            const data = await res.json();
+
+            if (!data.found) {
+                setErrorMessage(data.message || '해당 이름으로 등록된 사용자를 찾을 수 없습니다.');
+                setStep('name');
+                return;
+            }
+
+            setEmailHints(data.emailHints || []);
+            setStep('email');
+        } catch {
+            setErrorMessage('확인 중 오류가 발생했습니다.');
+            setStep('name');
+        }
+    };
+
+    // Step 2: 이메일 인증
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email.trim()) return;
+
+        setStep('loading');
+        setErrorMessage('');
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name.trim(),
+                    email: email.trim(),
+                    step: 'verify-email'
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!data.verified) {
+                setErrorMessage(data.message || '이메일이 일치하지 않습니다.');
+                setStep('email');
+                return;
+            }
+
+            // 인증 성공 - URL 업데이트 및 데이터 로드
+            router.replace(`/report?name=${encodeURIComponent(name.trim())}&verified=true`);
+            loadReportData(name.trim());
+        } catch {
+            setErrorMessage('인증 중 오류가 발생했습니다.');
+            setStep('email');
+        }
+    };
+
+    const handleBack = () => {
+        setStep('name');
+        setEmail('');
+        setEmailHints([]);
+        setErrorMessage('');
+    };
+
+    // 로딩 화면
+    if (step === 'loading') {
+        return (
+            <main className="min-h-screen bg-white text-black flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-2xl font-light mb-4">확인 중...</div>
+                    <p className="text-gray-500">잠시만 기다려주세요</p>
+                </div>
+            </main>
+        );
+    }
+
+    // Step 1: 이름 입력 화면
+    if (step === 'name' && !urlVerified) {
         return (
             <main className="min-h-screen bg-white text-black">
                 <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
@@ -77,29 +164,33 @@ function ReportContent() {
 
                 <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
                     <div className="max-w-md w-full text-center">
-                        <p className="text-sm text-gray-500 mb-4 tracking-widest uppercase">
-                            Report
+                        <p className="text-sm text-gray-500 mb-2 tracking-widest uppercase">
+                            Step 1 of 2
                         </p>
                         <h1 className="text-3xl font-light mb-4">
-                            <span className="font-medium">내 결과</span> 보기
+                            <span className="font-medium">이름</span> 입력
                         </h1>
                         <p className="text-gray-600 mb-8">
                             설문에 참여하신 분의 이름을 입력해주세요
                         </p>
 
-                        <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                        <form onSubmit={handleNameSubmit} className="flex flex-col gap-4">
                             <input
                                 type="text"
-                                value={searchName}
-                                onChange={(e) => setSearchName(e.target.value)}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 placeholder="이름 입력"
                                 className="w-full px-6 py-4 bg-gray-50 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-black/10"
+                                autoFocus
                             />
+                            {errorMessage && (
+                                <p className="text-red-500 text-sm">{errorMessage}</p>
+                            )}
                             <button
                                 type="submit"
                                 className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
                             >
-                                결과 보기
+                                다음
                             </button>
                         </form>
 
@@ -120,20 +211,76 @@ function ReportContent() {
         );
     }
 
-    // 로딩 중
-    if (loading) {
+    // Step 2: 이메일 입력 화면
+    if (step === 'email') {
         return (
-            <main className="min-h-screen bg-white text-black flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-2xl font-light mb-4">로딩 중...</div>
-                    <p className="text-gray-500">잠시만 기다려주세요</p>
-                </div>
+            <main className="min-h-screen bg-white text-black">
+                <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+                    <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                        <Link href="/" className="text-xl font-medium tracking-tight">
+                            Self Narrative
+                        </Link>
+                        <nav className="flex items-center gap-8">
+                            <button
+                                onClick={handleBack}
+                                className="text-sm text-gray-600 hover:text-black transition-colors"
+                            >
+                                ← 뒤로
+                            </button>
+                        </nav>
+                    </div>
+                </header>
+
+                <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+                    <div className="max-w-md w-full text-center">
+                        <p className="text-sm text-gray-500 mb-2 tracking-widest uppercase">
+                            Step 2 of 2
+                        </p>
+                        <h1 className="text-3xl font-light mb-4">
+                            <span className="font-medium">이메일</span> 확인
+                        </h1>
+                        <p className="text-gray-600 mb-4">
+                            <span className="font-medium">{name}</span>님, 본인 확인을 위해
+                            <br />이메일을 입력해주세요
+                        </p>
+
+                        {/* 이메일 힌트 표시 */}
+                        <div className="bg-gray-50 rounded-2xl p-4 mb-8">
+                            <p className="text-sm text-gray-500 mb-2">등록된 이메일 힌트</p>
+                            {emailHints.map((hint, index) => (
+                                <p key={index} className="font-mono text-lg">
+                                    {hint}
+                                </p>
+                            ))}
+                        </div>
+
+                        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="이메일 전체 입력"
+                                className="w-full px-6 py-4 bg-gray-50 rounded-full text-center focus:outline-none focus:ring-2 focus:ring-black/10"
+                                autoFocus
+                            />
+                            {errorMessage && (
+                                <p className="text-red-500 text-sm">{errorMessage}</p>
+                            )}
+                            <button
+                                type="submit"
+                                className="w-full py-4 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+                            >
+                                결과 보기
+                            </button>
+                        </form>
+                    </div>
+                </section>
             </main>
         );
     }
 
-    // 에러 (사용자 없음)
-    if (error) {
+    // 에러 화면
+    if (step === 'error') {
         return (
             <main className="min-h-screen bg-white text-black">
                 <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
@@ -152,19 +299,15 @@ function ReportContent() {
                 <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20">
                     <div className="text-center max-w-md">
                         <h1 className="text-3xl font-light mb-4">
-                            <span className="font-medium">{userName}</span>님의
-                            <br />결과를 찾을 수 없습니다
+                            오류가 발생했습니다
                         </h1>
-                        <p className="text-gray-600 mb-8">
-                            설문에 참여하셨는지 확인해주세요.
-                            <br />이름은 정확히 입력해야 합니다.
-                        </p>
-                        <Link
-                            href="/report"
+                        <p className="text-gray-600 mb-8">{errorMessage}</p>
+                        <button
+                            onClick={handleBack}
                             className="inline-block px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
                         >
-                            다시 검색하기
-                        </Link>
+                            다시 시도하기
+                        </button>
                     </div>
                 </section>
             </main>
@@ -178,6 +321,7 @@ function ReportContent() {
 
     // 지인 응답이 없는 경우
     if (reportData.friendData.totalResponses < 1) {
+        const userName = reportData.user.name;
         return (
             <main className="min-h-screen bg-white text-black">
                 <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
@@ -215,6 +359,7 @@ function ReportContent() {
         );
     }
 
+    // 결과 리포트 표시
     return (
         <main className="min-h-screen bg-white text-black">
             {/* 헤더 */}
@@ -228,7 +373,7 @@ function ReportContent() {
                             홈
                         </Link>
                         <Link
-                            href={`/share?name=${encodeURIComponent(userName)}`}
+                            href={`/share?name=${encodeURIComponent(reportData.user.name)}`}
                             className="text-sm text-gray-600 hover:text-black transition-colors"
                         >
                             공유하기
