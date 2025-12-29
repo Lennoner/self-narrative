@@ -7,13 +7,13 @@ interface UserProfileCardProps {
     friendData: FriendAggregatedData;
 }
 
-// 심리 상태를 이모지와 텍스트로 변환
+// 심리 상태를 이모지와 텍스트로 변환 (1: 매우 무기력함 ~ 5: 매우 활기참)
 function getMoodDisplay(score: number): { emoji: string; text: string; color: string } {
-    if (score >= 5) return { emoji: '😄', text: '매우 좋음', color: 'text-green-500' };
-    if (score >= 4) return { emoji: '😊', text: '좋음', color: 'text-green-400' };
+    if (score >= 5) return { emoji: '⚡', text: '매우 활기참', color: 'text-green-500' };
+    if (score >= 4) return { emoji: '😊', text: '활기참', color: 'text-green-400' };
     if (score >= 3) return { emoji: '😐', text: '보통', color: 'text-yellow-500' };
-    if (score >= 2) return { emoji: '😔', text: '낮음', color: 'text-orange-400' };
-    return { emoji: '😢', text: '매우 낮음', color: 'text-red-400' };
+    if (score >= 2) return { emoji: '😔', text: '무기력함', color: 'text-orange-400' };
+    return { emoji: '😢', text: '매우 무기력함', color: 'text-red-400' };
 }
 
 export default function UserProfileCard({ user, friendData }: UserProfileCardProps) {
