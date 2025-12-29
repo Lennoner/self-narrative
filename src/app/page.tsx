@@ -8,10 +8,13 @@ export default function Home() {
   const router = useRouter();
   const [searchName, setSearchName] = useState('');
   const [shareName, setShareName] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleSearchResult = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchName.trim()) {
+      setIsSearching(true);
       router.push(`/report?name=${encodeURIComponent(searchName.trim())}`);
     }
   };
@@ -19,6 +22,7 @@ export default function Home() {
   const handleGoToShare = (e: React.FormEvent) => {
     e.preventDefault();
     if (shareName.trim()) {
+      setIsSharing(true);
       router.push(`/share?name=${encodeURIComponent(shareName.trim())}`);
     }
   };
@@ -105,13 +109,15 @@ export default function Home() {
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
                   placeholder="이름 입력"
-                  className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all"
+                  disabled={isSearching}
+                  className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-black text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all"
+                  disabled={isSearching || !searchName.trim()}
+                  className="px-6 py-3 bg-black text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  확인
+                  {isSearching ? '확인 중...' : '확인'}
                 </button>
               </form>
             </div>
@@ -133,13 +139,15 @@ export default function Home() {
                   value={shareName}
                   onChange={(e) => setShareName(e.target.value)}
                   placeholder="이름 입력"
-                  className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all"
+                  disabled={isSharing}
+                  className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-white text-black text-sm font-medium rounded-full border border-gray-200 hover:border-gray-400 transition-all"
+                  disabled={isSharing || !shareName.trim()}
+                  className="px-6 py-3 bg-white text-black text-sm font-medium rounded-full border border-gray-200 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  공유
+                  {isSharing ? '이동 중...' : '공유'}
                 </button>
               </form>
             </div>
