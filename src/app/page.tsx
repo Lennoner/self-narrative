@@ -125,7 +125,7 @@ export default function Home() {
                 <span className="font-semibold">지인에게</span> 공유하기
               </h2>
               <p className="text-sm text-gray-500 mb-6">
-                설문 완료 후 지인에게 공유하려면, 이름을 입력하세요.
+                설문 완료 후 지인에게 공유하세요. 최소 2명만 응답해도 결과가 나와요!
               </p>
               <form onSubmit={handleGoToShare} className="flex gap-2">
                 <input
