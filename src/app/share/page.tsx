@@ -190,7 +190,7 @@ function ShareContent() {
                             친구들의 시선이 필요해요
                         </h2>
                         <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-                            최소 <span className="font-medium text-black">3명</span> 이상의 친구가 응답해야
+                            최소 <span className="font-medium text-black">2명</span> 이상의 친구가 응답해야
                             의미 있는 인식 격차 리포트가 완성됩니다.
                         </p>
 
