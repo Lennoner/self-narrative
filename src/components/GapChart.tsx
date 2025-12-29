@@ -37,34 +37,50 @@ export default function GapChart({ gaps }: GapChartProps) {
                             <div className="space-y-5">
                                 {categoryGaps.map((gap) => (
                                     <div key={`${gap.category}-${gap.label}`}>
-                                        <div className="flex justify-between items-center mb-2">
+                                        <div className="flex justify-between items-center mb-3">
                                             <span className="text-sm font-medium">{gap.label}</span>
                                             <div className="flex items-center gap-4 text-sm">
-                                                <span className="text-gray-500">
-                                                    나 <span className="text-black font-medium">{gap.selfScore}</span>
+                                                <span className="flex items-center gap-1">
+                                                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                                    <span className="text-gray-500">나</span>
+                                                    <span className="text-blue-600 font-medium">{gap.selfScore}</span>
                                                 </span>
-                                                <span className="text-gray-500">
-                                                    지인 <span className="text-black font-medium">{gap.friendAvgScore.toFixed(1)}</span>
+                                                <span className="flex items-center gap-1">
+                                                    <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                                                    <span className="text-gray-500">지인</span>
+                                                    <span className="text-orange-500 font-medium">{gap.friendAvgScore.toFixed(1)}</span>
                                                 </span>
-                                                <span className={`font-medium ${gap.gap > 0 ? 'text-green-600' : gap.gap < 0 ? 'text-red-500' : 'text-gray-500'
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${gap.gap > 0
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : gap.gap < 0
+                                                            ? 'bg-red-100 text-red-600'
+                                                            : 'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     {gap.gap > 0 ? '+' : ''}{gap.gap.toFixed(1)}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        {/* 바 차트 */}
-                                        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-black rounded-full transition-all duration-500"
-                                                style={{ width: `${(gap.selfScore / 5) * 100}%` }}
-                                            />
-                                        </div>
-                                        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-gray-400 rounded-full transition-all duration-500"
-                                                style={{ width: `${(gap.friendAvgScore / 5) * 100}%` }}
-                                            />
+                                        {/* 바 차트 - 색상 대비 강화 */}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs text-gray-400 w-8">나</span>
+                                                <div className="flex-1 relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-500"
+                                                        style={{ width: `${(gap.selfScore / 5) * 100}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs text-gray-400 w-8">지인</span>
+                                                <div className="flex-1 relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="absolute top-0 left-0 h-full bg-orange-400 rounded-full transition-all duration-500"
+                                                        style={{ width: `${(gap.friendAvgScore / 5) * 100}%` }}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -84,12 +100,16 @@ export default function GapChart({ gaps }: GapChartProps) {
             {/* 범례 */}
             <div className="flex justify-center gap-8 mt-6 text-sm">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-black rounded-full" />
+                    <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     <span className="text-gray-600">나의 평가</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full" />
+                    <div className="w-3 h-3 bg-orange-400 rounded-full" />
                     <span className="text-gray-600">지인 평균</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">+0.5</span>
+                    <span className="text-gray-600">지인이 더 높이 평가</span>
                 </div>
             </div>
         </div>
@@ -101,10 +121,10 @@ function getInsight(gaps: GapData[]): string {
     const category = gaps[0]?.category || '';
 
     if (avgGap > 0.5) {
-        return `지인들은 "${category}"에 대해 당신을 평균 ${avgGap.toFixed(1)}점 더 높이 평가합니다. 스스로 인지하지 못한 강점이 있을 수 있어요.`;
+        return `💡 지인들은 "${category}"에서 당신을 평균 ${avgGap.toFixed(1)}점 더 높이 평가합니다. 스스로 인지하지 못한 강점이 있을 수 있어요.`;
     } else if (avgGap < -0.5) {
-        return `"${category}"에 대한 자기 평가가 지인들보다 높습니다. 이 차이에 대해 생각해보는 것도 좋겠어요.`;
+        return `🤔 "${category}"에 대한 자기 평가가 지인들보다 높습니다. 이 차이에 대해 생각해보는 것도 좋겠어요.`;
     } else {
-        return `"${category}"에서 자기 인식과 지인들의 시선이 거의 일치합니다. 균형 잡힌 자기 이해를 가지고 계시네요.`;
+        return `✨ "${category}"에서 자기 인식과 지인들의 시선이 거의 일치합니다. 균형 잡힌 자기 이해를 가지고 계시네요.`;
     }
 }

@@ -7,11 +7,22 @@ interface UserProfileCardProps {
     friendData: FriendAggregatedData;
 }
 
+// 심리 상태를 이모지와 텍스트로 변환
+function getMoodDisplay(score: number): { emoji: string; text: string; color: string } {
+    if (score >= 5) return { emoji: '😄', text: '매우 좋음', color: 'text-green-500' };
+    if (score >= 4) return { emoji: '😊', text: '좋음', color: 'text-green-400' };
+    if (score >= 3) return { emoji: '😐', text: '보통', color: 'text-yellow-500' };
+    if (score >= 2) return { emoji: '😔', text: '낮음', color: 'text-orange-400' };
+    return { emoji: '😢', text: '매우 낮음', color: 'text-red-400' };
+}
+
 export default function UserProfileCard({ user, friendData }: UserProfileCardProps) {
+    const mood = getMoodDisplay(user.baselineScore);
+
     return (
         <div className="w-full max-w-4xl mx-auto">
             {/* 헤더 카드 */}
-            <div className="bg-black rounded-2xl p-8 text-white mb-8">
+            <div className="bg-black rounded-2xl p-8 text-white mb-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     {/* 이름 */}
                     <div>
@@ -21,20 +32,32 @@ export default function UserProfileCard({ user, friendData }: UserProfileCardPro
                         </h1>
                     </div>
 
-                    {/* 요약 정보 */}
-                    <div className="flex gap-8">
-                        <div className="text-center">
-                            <p className="text-3xl font-light">{user.baselineScore}</p>
-                            <p className="text-xs text-gray-400 mt-1">심리 상태</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-light">{friendData.totalResponses}</p>
+                    {/* 리포트 요약 정보 */}
+                    <div className="flex gap-6">
+                        <div className="text-center px-4 py-2 bg-white/10 rounded-xl">
+                            <p className="text-2xl font-light">{friendData.totalResponses}명</p>
                             <p className="text-xs text-gray-400 mt-1">지인 응답</p>
                         </div>
-                        <div className="text-center">
-                            <p className="text-3xl font-light">6</p>
+                        <div className="text-center px-4 py-2 bg-white/10 rounded-xl">
+                            <p className="text-2xl font-light">6개</p>
                             <p className="text-xs text-gray-400 mt-1">분석 항목</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 심리 상태 카드 - 별도 분리 */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6 mb-6">
+                <div className="flex items-center gap-4">
+                    <div className="text-5xl">{mood.emoji}</div>
+                    <div>
+                        <p className="text-sm text-gray-500 mb-1">현재 심리 상태</p>
+                        <p className={`text-xl font-medium ${mood.color}`}>
+                            {mood.text}
+                            <span className="text-gray-400 font-normal text-sm ml-2">
+                                ({user.baselineScore}/5)
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>
