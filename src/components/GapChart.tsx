@@ -6,14 +6,14 @@ interface GapChartProps {
     gaps: GapData[];
 }
 
-// 라벨을 짧은 질문으로 매핑
+// 라벨을 질문으로 매핑
 const labelToQuestion: Record<string, string> = {
-    '극복력': '어려운 상황을 내 힘으로 극복했다',
-    '자부심': '내 성과에 자부심을 느낀다',
-    '영향력': '주변에 긍정적 영향을 준다',
-    '필요성': '내가 속한 그룹에 꼭 필요하다',
-    '잠재력': '나만의 가치를 증명할 잠재력이 있다',
-    '성장기대': '3년 뒤 더 나다운 삶을 산다',
+    '극복력': '어려운 상황을 내 힘으로 극복해본 적 있다',
+    '자부심': '내 성과에 대해 자부심을 느낀다',
+    '영향력': '주변 사람들에게 긍정적 영향을 주고 있다',
+    '필요성': '내가 속한 그룹에서 꼭 필요한 사람이다',
+    '잠재력': '나만의 가치를 증명할 잠재력이 충분하다',
+    '성장기대': '3년 뒤 더 나다운 삶을 살고 있을 것이다',
 };
 
 export default function GapChart({ gaps }: GapChartProps) {
@@ -91,8 +91,8 @@ export default function GapChart({ gaps }: GapChartProps) {
                             <div className="space-y-5">
                                 {categoryGaps.map((gap) => (
                                     <div key={`${gap.category}-${gap.label}`}>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <span className="text-sm font-medium text-gray-700 leading-tight max-w-[200px]">
+                                        <div className="flex justify-between items-start mb-3 gap-4">
+                                            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
                                                 {labelToQuestion[gap.label] || gap.label}
                                             </span>
                                             <div className="flex items-center gap-4 text-sm">
