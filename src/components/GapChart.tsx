@@ -30,16 +30,16 @@ export default function GapChart({ gaps }: GapChartProps) {
     const minGap = Math.min(...gaps.map(g => g.gap));
 
     return (
-        <div className="w-full max-w-4xl mx-auto">
-            <div className="mb-8">
-                <p className="text-sm text-gray-500 mb-2 tracking-widest uppercase">Gap Analysis</p>
-                <h2 className="text-2xl font-light">
-                    <span className="font-medium">인식 격차</span> 분석
+        <div className="w-full max-w-5xl mx-auto">
+            <div className="mb-10">
+                <p className="text-sm text-gray-400 mb-3 tracking-widest uppercase">Gap Analysis</p>
+                <h2 className="text-3xl md:text-4xl font-light">
+                    <span className="font-semibold">인식 격차</span> 분석
                 </h2>
             </div>
 
             {/* 전체 요약 */}
-            <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-2xl p-6 mb-8 shadow-sm">
+            <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-3xl p-8 mb-10 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <p className="text-sm text-gray-500 mb-1">전체 평균 격차</p>
@@ -77,15 +77,15 @@ export default function GapChart({ gaps }: GapChartProps) {
                 </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
                 {categories.map((category) => {
                     const categoryGaps = gaps.filter((g) => g.category === category);
 
                     return (
-                        <div key={category} className="bg-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-baseline gap-3 mb-6">
-                                <h3 className="text-lg font-medium">{category}</h3>
-                                <span className="text-sm text-gray-500">{categoryMeta[category].desc}</span>
+                        <div key={category} className="bg-gray-50 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <div className="flex items-baseline gap-4 mb-8">
+                                <h3 className="text-xl font-semibold">{category}</h3>
+                                <span className="text-base text-gray-500">{categoryMeta[category].desc}</span>
                             </div>
 
                             <div className="space-y-5">
@@ -154,7 +154,7 @@ export default function GapChart({ gaps }: GapChartProps) {
             </div>
 
             {/* 범례 */}
-            <div className="flex justify-center gap-8 mt-6 text-sm">
+            <div className="flex justify-center gap-10 mt-10 text-base">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     <span className="text-gray-600">나의 평가</span>

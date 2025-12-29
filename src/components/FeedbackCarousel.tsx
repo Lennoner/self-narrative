@@ -27,26 +27,26 @@ export default function FeedbackCarousel({ evaluations }: FeedbackCarouselProps)
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto">
-            <div className="mb-8">
-                <p className="text-sm text-gray-500 mb-2 tracking-widest uppercase">Qualitative Feedback</p>
-                <h2 className="text-2xl font-light">
-                    <span className="font-medium">지인들의 목소리</span>
+        <div className="w-full max-w-5xl mx-auto">
+            <div className="mb-10">
+                <p className="text-sm text-gray-400 mb-3 tracking-widest uppercase">Qualitative Feedback</p>
+                <h2 className="text-3xl md:text-4xl font-light">
+                    <span className="font-semibold">지인들의 목소리</span>
                 </h2>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-base text-gray-500 mt-3">
                     {evaluations.length}명의 지인이 응답했습니다
                 </p>
             </div>
 
             {/* 카테고리 탭 */}
-            <div className="flex gap-2 mb-8">
+            <div className="flex gap-3 mb-10">
                 {(Object.keys(categoryConfig) as TimeCategory[]).map((category) => (
                     <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === category
-                                ? 'bg-black text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        className={`px-7 py-3 rounded-full text-base font-medium transition-all duration-300 ${activeCategory === category
+                            ? 'bg-black text-white scale-105'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
                         {categoryConfig[category].label}
@@ -55,7 +55,7 @@ export default function FeedbackCarousel({ evaluations }: FeedbackCarouselProps)
             </div>
 
             {/* 피드백 카드들 */}
-            <div className="space-y-4">
+            <div className="space-y-5">
                 {evaluations.map((evaluation, index) => {
                     const feedbackText = getFeedbackText(evaluation, activeCategory);
                     const selection = getSelection(evaluation, activeCategory);
@@ -63,22 +63,22 @@ export default function FeedbackCarousel({ evaluations }: FeedbackCarouselProps)
                     return (
                         <div
                             key={evaluation.submissionId}
-                            className="bg-gray-50 rounded-2xl p-6"
+                            className="bg-gray-50 rounded-3xl p-8 hover:shadow-md transition-shadow duration-300"
                         >
                             {/* 선택 응답 */}
-                            <p className="text-xs text-gray-500 mb-3">{selection}</p>
+                            <p className="text-sm text-gray-500 mb-4 leading-relaxed">{selection}</p>
 
                             {/* 피드백 텍스트 */}
-                            <blockquote className="text-gray-700 leading-relaxed">
+                            <blockquote className="text-lg text-gray-700 leading-relaxed">
                                 &ldquo;{feedbackText}&rdquo;
                             </blockquote>
 
                             {/* 익명 표시 */}
-                            <div className="mt-4 flex items-center gap-2 text-gray-400 text-sm">
-                                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center text-white text-xs">
+                            <div className="mt-6 flex items-center gap-3 text-gray-400 text-sm">
+                                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white text-sm font-medium">
                                     {index + 1}
                                 </div>
-                                <span>익명</span>
+                                <span>익명 응답자</span>
                             </div>
                         </div>
                     );
@@ -86,8 +86,8 @@ export default function FeedbackCarousel({ evaluations }: FeedbackCarouselProps)
             </div>
 
             {/* 요약 */}
-            <div className="mt-8 text-center">
-                <p className="text-sm text-gray-500">
+            <div className="mt-10 text-center">
+                <p className="text-base text-gray-500">
                     {categoryConfig[activeCategory].description}에 대한 지인들의 이야기
                 </p>
             </div>
