@@ -6,6 +6,16 @@ interface GapChartProps {
     gaps: GapData[];
 }
 
+// 라벨을 원문 축약 질문으로 매핑
+const labelToQuestion: Record<string, string> = {
+    '극복력': '어려운 상황을 내 힘으로 극복',
+    '자부심': '성과에 대해 자부심을 느낀다',
+    '영향력': '주변에 긍정적 영향을 주고 있다',
+    '필요성': '그룹에서 꼭 필요한 사람이다',
+    '잠재력': '나만의 가치를 증명할 잠재력이 있다',
+    '성장기대': '3년 뒤 더 나다운 삶을 살 것이다',
+};
+
 export default function GapChart({ gaps }: GapChartProps) {
     const categories = ['과거', '현재', '미래'];
     const categoryMeta: Record<string, { en: string; desc: string }> = {
@@ -13,6 +23,11 @@ export default function GapChart({ gaps }: GapChartProps) {
         '현재': { en: 'Present', desc: '사회적 가치 입증' },
         '미래': { en: 'Future', desc: '잠재역량 도출' },
     };
+
+    // 전체 평균 격차 계산
+    const avgGap = gaps.reduce((sum, g) => sum + g.gap, 0) / gaps.length;
+    const maxGap = Math.max(...gaps.map(g => g.gap));
+    const minGap = Math.min(...gaps.map(g => g.gap));
 
     return (
         <div className="w-full max-w-4xl mx-auto">
@@ -23,12 +38,51 @@ export default function GapChart({ gaps }: GapChartProps) {
                 </h2>
             </div>
 
+            {/* 전체 요약 */}
+            <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-2xl p-6 mb-8 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <p className="text-sm text-gray-500 mb-1">전체 평균 격차</p>
+                        <p className="text-2xl font-medium">
+                            {avgGap > 0 ? (
+                                <span className="text-green-600">+{avgGap.toFixed(2)}점</span>
+                            ) : avgGap < 0 ? (
+                                <span className="text-red-500">{avgGap.toFixed(2)}점</span>
+                            ) : (
+                                <span className="text-gray-600">0점</span>
+                            )}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                            {avgGap > 0
+                                ? '지인들이 당신을 더 높이 평가하고 있어요 💪'
+                                : avgGap < 0
+                                    ? '자기 평가가 지인보다 높은 편이에요'
+                                    : '자기 인식과 지인 평가가 일치해요'}
+                        </p>
+                    </div>
+                    <div className="flex gap-6 text-center">
+                        <div>
+                            <p className="text-sm text-gray-500">최대 격차</p>
+                            <p className={`text-lg font-medium ${maxGap > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                                {maxGap > 0 ? '+' : ''}{maxGap.toFixed(1)}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500">최소 격차</p>
+                            <p className={`text-lg font-medium ${minGap < 0 ? 'text-red-500' : 'text-gray-600'}`}>
+                                {minGap > 0 ? '+' : ''}{minGap.toFixed(1)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="space-y-6">
                 {categories.map((category) => {
                     const categoryGaps = gaps.filter((g) => g.category === category);
 
                     return (
-                        <div key={category} className="bg-gray-50 rounded-2xl p-6">
+                        <div key={category} className="bg-gray-50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-baseline gap-3 mb-6">
                                 <h3 className="text-lg font-medium">{category}</h3>
                                 <span className="text-sm text-gray-500">{categoryMeta[category].desc}</span>
@@ -37,8 +91,10 @@ export default function GapChart({ gaps }: GapChartProps) {
                             <div className="space-y-5">
                                 {categoryGaps.map((gap) => (
                                     <div key={`${gap.category}-${gap.label}`}>
-                                        <div className="flex justify-between items-center mb-3">
-                                            <span className="text-sm font-medium">{gap.label}</span>
+                                        <div className="flex justify-between items-start mb-3">
+                                            <span className="text-sm font-medium text-gray-700 leading-tight max-w-[200px]">
+                                                {labelToQuestion[gap.label] || gap.label}
+                                            </span>
                                             <div className="flex items-center gap-4 text-sm">
                                                 <span className="flex items-center gap-1">
                                                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
