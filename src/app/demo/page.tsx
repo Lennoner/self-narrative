@@ -80,7 +80,7 @@ export default function DemoPage() {
             <footer className="py-10 px-5 md:px-8 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
                     <p className="text-xs text-gray-400">
-                        © 2024 Self Narrative Project
+                        © 2025 Self Narrative Project
                     </p>
                     <p className="text-xs text-gray-400">
                         당신이 몰랐던 당신의 진짜 이야기를 찾아서

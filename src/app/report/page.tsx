@@ -451,7 +451,7 @@ function ReportContent() {
             <footer className="py-12 px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-gray-500">
-                        © 2024 Self Narrative Project
+                        © 2025 Self Narrative Project
                     </p>
                     <p className="text-sm text-gray-500">
                         당신이 몰랐던 당신의 진짜 이야기를 찾아서
