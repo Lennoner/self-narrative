@@ -27,7 +27,7 @@ export default function ShareLinkPage() {
 
             const data = await response.json();
 
-            if (data.exists) {
+            if (data.found) {
                 // 사용자 존재 → 공유 페이지로 이동
                 router.push(`/share?name=${encodeURIComponent(name.trim())}`);
             } else {
