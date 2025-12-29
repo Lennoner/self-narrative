@@ -10,6 +10,7 @@ export default function Home() {
   const [shareName, setShareName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [shareError, setShareError] = useState('');
 
   const handleSearchResult = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,11 +20,30 @@ export default function Home() {
     }
   };
 
-  const handleGoToShare = (e: React.FormEvent) => {
+  const handleGoToShare = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (shareName.trim()) {
-      setIsSharing(true);
-      router.push(`/share?name=${encodeURIComponent(shareName.trim())}`);
+    if (!shareName.trim()) return;
+
+    setIsSharing(true);
+    setShareError('');
+
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: shareName.trim(), step: 'check-name' }),
+      });
+      const data = await response.json();
+
+      if (data.exists) {
+        router.push(`/share?name=${encodeURIComponent(shareName.trim())}`);
+      } else {
+        setShareError('해당 이름으로 설문 기록이 없어요. 먼저 설문에 참여해주세요!');
+        setIsSharing(false);
+      }
+    } catch {
+      setShareError('오류가 발생했습니다. 다시 시도해주세요.');
+      setIsSharing(false);
     }
   };
 
@@ -133,22 +153,32 @@ export default function Home() {
               <p className="text-sm text-gray-500 mb-6">
                 설문 완료 후 지인에게 공유하세요. 최소 2명만 응답해도 결과가 나와요!
               </p>
-              <form onSubmit={handleGoToShare} className="flex gap-2">
-                <input
-                  type="text"
-                  value={shareName}
-                  onChange={(e) => setShareName(e.target.value)}
-                  placeholder="이름 입력"
-                  disabled={isSharing}
-                  className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all disabled:opacity-50"
-                />
-                <button
-                  type="submit"
-                  disabled={isSharing || !shareName.trim()}
-                  className="px-6 py-3 bg-white text-black text-sm font-medium rounded-full border border-gray-200 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSharing ? '이동 중...' : '공유'}
-                </button>
+              <form onSubmit={handleGoToShare} className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={shareName}
+                    onChange={(e) => {
+                      setShareName(e.target.value);
+                      setShareError('');
+                    }}
+                    placeholder="이름 입력"
+                    disabled={isSharing}
+                    className="flex-1 px-4 py-3 bg-gray-50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all disabled:opacity-50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSharing || !shareName.trim()}
+                    className="px-6 py-3 bg-white text-black text-sm font-medium rounded-full border border-gray-200 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSharing ? '확인 중...' : '공유'}
+                  </button>
+                </div>
+                {shareError && (
+                  <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+                    {shareError}
+                  </p>
+                )}
               </form>
             </div>
           </div>
